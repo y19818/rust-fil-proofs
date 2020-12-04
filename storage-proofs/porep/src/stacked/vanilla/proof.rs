@@ -46,11 +46,11 @@ use super::{
 };
 
 use ff::Field;
+use fr32::fr_into_bytes;
 use generic_array::{sequence::GenericSequence, GenericArray};
 use neptune::batch_hasher::BatcherType;
 use neptune::column_tree_builder::{ColumnTreeBuilder, ColumnTreeBuilderTrait};
 use neptune::tree_builder::{TreeBuilder, TreeBuilderTrait};
-use storage_proofs_core::fr32::fr_into_bytes;
 
 use crate::encode::{decode, encode};
 use crate::PoRep;
@@ -1379,11 +1379,12 @@ mod tests {
     use filecoin_hashers::{
         blake2s::Blake2sHasher, poseidon::PoseidonHasher, sha256::Sha256Hasher,
     };
+    use fr32::fr_into_bytes;
     use rand::{Rng, SeedableRng};
     use rand_xorshift::XorShiftRng;
     use storage_proofs_core::{
-        api_version::ApiVersion, drgraph::BASE_DEGREE, fr32::fr_into_bytes,
-        merkle::MerkleTreeTrait, proof::ProofScheme, table_tests, test_helper::setup_replica,
+        api_version::ApiVersion, drgraph::BASE_DEGREE, merkle::MerkleTreeTrait, proof::ProofScheme,
+        table_tests, test_helper::setup_replica,
     };
 
     use crate::stacked::{PrivateInputs, SetupParams, EXP_DEGREE};
