@@ -9,7 +9,8 @@ repository = "https://github.com/filecoin-project/rust-fil-proofs"
 readme = "README.md"
 
 [dependencies]
-bellperson = { version = "0.12.3", default-features = false }
+#bellperson = { version = "0.12.3", default-features = false }
+bellperson = { path = "/home/nemo/pl/bellman", default-features = false }
 generic-array = "0.14.4"
 merkletree = "0.21.0"
 ff = { version = "0.2.3", package = "fff" }
@@ -24,12 +25,15 @@ sha2 = { version = "0.9.2", optional = true }
 hex = "0.4.2"
 
 [features]
-default = ["gpu", "pairing", "blake2s", "poseidon", "sha256"]
+#default = ["gpu", "pairing", "blake2s", "poseidon", "sha256"]
+default = ["gpu", "blake2s", "poseidon", "sha256"]
 
 gpu = ["bellperson/gpu", "neptune/gpu"]
 
-pairing = ["bellperson/pairing", "neptune/pairing", "bellperson/pairing-serde"]
-blst = ["bellperson/blst", "neptune/blst", "bellperson/blst-serde"]
+pairing = []
+blst = []
+#pairing = ["bellperson/pairing", "neptune/pairing", "bellperson/pairing-serde"]
+#blst = ["bellperson/blst", "neptune/blst", "bellperson/blst-serde"]
 
 # available hashers
 blake2s = ["blake2s_simd"]
