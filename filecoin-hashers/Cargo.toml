@@ -10,7 +10,7 @@ readme = "README.md"
 
 [dependencies]
 #bellperson = { version = "0.12.3", default-features = false }
-bellperson = { path = "/home/nemo/pl/bellman", default-features = false }
+bellperson = { git = "https://github.com/cryptonemo/bellman", branch = "feat-aggregation", default-features = false }
 generic-array = "0.14.4"
 merkletree = "0.21.0"
 ff = { version = "0.2.3", package = "fff" }

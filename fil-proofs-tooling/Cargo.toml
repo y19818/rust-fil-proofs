@@ -26,7 +26,7 @@ commandspec = "0.12.2"
 chrono = { version = "0.4.7", features = ["serde"] }
 memmap = "0.7.0"
 #bellperson = { version = "0.12.3", default-features = false }
-bellperson = { path = "/home/nemo/pl/bellman", default-features = false }
+bellperson = { git = "https://github.com/cryptonemo/bellman", branch = "feat-aggregation", default-features = false }
 rand = "0.7"
 tempfile = "3.0.8"
 cpu-time = "1.0.0"
