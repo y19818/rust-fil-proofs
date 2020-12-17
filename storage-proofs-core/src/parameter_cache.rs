@@ -26,6 +26,7 @@ pub const VERSION: usize = 28;
 pub const GROTH_PARAMETER_EXT: &str = "params";
 pub const PARAMETER_METADATA_EXT: &str = "meta";
 pub const VERIFYING_KEY_EXT: &str = "vk";
+pub const SRS_KEY_EXT: &str = "srs";
 
 #[derive(Debug)]
 pub struct LockedFile(File);
@@ -173,6 +174,14 @@ pub fn parameter_cache_verifying_key_path(parameter_set_identifier: &str) -> Pat
     ))
 }
 
+pub fn parameter_cache_srs_key_path(parameter_set_identifier: &str) -> PathBuf {
+    let dir = Path::new(&parameter_cache_dir_name()).to_path_buf();
+    dir.join(format!(
+        "v{}-{}.{}",
+        VERSION, parameter_set_identifier, SRS_KEY_EXT
+    ))
+}
+
 fn ensure_ancestor_dirs_exist(cache_entry_path: PathBuf) -> Result<PathBuf> {
     info!(
         "ensuring that all ancestor directories for: {:?} exist",
@@ -298,6 +307,38 @@ where
     /// parameters are otherwise unavailable (e.g. benches).  If rng
     /// is not set, an error will result if parameters are not
     /// present.
+    fn get_inner_product<R: RngCore>(
+        rng: Option<&mut R>,
+        _circuit: C,
+        pub_params: &P,
+        num_proofs_to_aggregate: usize,
+    ) -> Result<groth16::SRS<Bls12>> {
+        let id = Self::cache_identifier(pub_params);
+        let cache_path = ensure_ancestor_dirs_exist(parameter_cache_srs_key_path(&id))?;
+
+        let generate = || -> Result<groth16::SRS<Bls12>> {
+            if let Some(rng) = rng {
+                Ok(groth16::setup_inner_product(rng, num_proofs_to_aggregate))
+            } else {
+                bail!("No cached srs key found for {} [failure finding {}]",
+                      id,
+                      cache_path.display()
+                );
+            }
+        };
+
+        // generate (or load) srs key
+        match read_cached_srs_key(&cache_path) {
+            Ok(key) => Ok(key),
+            Err(_) => write_cached_srs_key(&cache_path, generate()?).map_err(Into::into),
+        }
+    }
+
+    /// If the rng option argument is set, parameters will be
+    /// generated using it.  This is used for testing only, or where
+    /// parameters are otherwise unavailable (e.g. benches).  If rng
+    /// is not set, an error will result if parameters are not
+    /// present.
     fn get_verifying_key<R: RngCore>(
         rng: Option<&mut R>,
         circuit: C,
@@ -416,6 +457,21 @@ fn read_cached_verifying_key(
     })
 }
 
+fn read_cached_srs_key(
+    cache_entry_path: &PathBuf,
+) -> io::Result<groth16::SRS<Bls12>> {
+    info!(
+        "checking cache_path: {:?} for srs",
+        cache_entry_path
+    );
+    with_exclusive_read_lock(cache_entry_path, |mut file| {
+        let key = groth16::SRS::read(&mut file)?;
+        info!("read srs key from cache {:?} ", cache_entry_path);
+
+        Ok(key)
+    })
+}
+
 fn read_cached_metadata(cache_entry_path: &PathBuf) -> io::Result<CacheEntryMetadata> {
     info!("checking cache_path: {:?} for metadata", cache_entry_path);
     with_exclusive_read_lock(cache_entry_path, |file| {
@@ -446,6 +502,19 @@ fn write_cached_verifying_key(
         value.write(&mut file)?;
         file.flush()?;
         info!("wrote verifying key to cache {:?} ", cache_entry_path);
+
+        Ok(value)
+    })
+}
+
+fn write_cached_srs_key(
+    cache_entry_path: &PathBuf,
+    value: groth16::SRS<Bls12>,
+) -> io::Result<groth16::SRS<Bls12>> {
+    with_exclusive_lock(cache_entry_path, |mut file| {
+        value.write(&mut file)?;
+        file.flush()?;
+        info!("wrote srs key to cache {:?} ", cache_entry_path);
 
         Ok(value)
     })

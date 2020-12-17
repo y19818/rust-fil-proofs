@@ -315,6 +315,19 @@ where
         Self::get_verifying_key(rng, Self::blank_circuit(public_params), public_params)
     }
 
+    /// If the rng option argument is set, parameters will be
+    /// generated using it.  This is used for testing only, or where
+    /// parameters are otherwise unavailable (e.g. benches).  If rng
+    /// is not set, an error will result if parameters are not
+    /// present.
+    fn srs_key<R: RngCore>(
+        rng: Option<&mut R>,
+        public_params: &S::PublicParams,
+        num_proofs_to_aggregate: usize,
+    ) -> Result<groth16::SRS<Bls12>> {
+        Self::get_inner_product(rng, Self::blank_circuit(public_params), public_params, num_proofs_to_aggregate)
+    }
+
     fn circuit_for_test(
         public_parameters: &PublicParams<'a, S>,
         public_inputs: &S::PublicInputs,
