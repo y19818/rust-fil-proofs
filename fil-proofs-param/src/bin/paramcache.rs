@@ -19,13 +19,12 @@ use filecoin_proofs::types::{
 };
 use filecoin_proofs::{with_shape, PoStType};
 
-use storage_proofs::api_version::ApiVersion;
-use storage_proofs::compound_proof::CompoundProof;
-use storage_proofs::merkle::MerkleTreeTrait;
-
-use storage_proofs::parameter_cache::CacheableParameters;
-use storage_proofs::porep::stacked::{StackedCompound, StackedDrg};
-use storage_proofs::post::fallback::{FallbackPoSt, FallbackPoStCircuit, FallbackPoStCompound};
+use storage_proofs_core::api_version::ApiVersion;
+use storage_proofs_core::compound_proof::CompoundProof;
+use storage_proofs_core::merkle::MerkleTreeTrait;
+use storage_proofs_core::parameter_cache::CacheableParameters;
+use storage_proofs_porep::stacked::{StackedCompound, StackedDrg};
+use storage_proofs_post::fallback::{FallbackPoSt, FallbackPoStCircuit, FallbackPoStCompound};
 
 fn cache_porep_params<Tree: 'static + MerkleTreeTrait>(porep_config: PoRepConfig) {
     info!("PoRep params");

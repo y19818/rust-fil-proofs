@@ -20,7 +20,7 @@ use filecoin_proofs::{
     SECTOR_SIZE_2_KIB, SECTOR_SIZE_32_GIB, SECTOR_SIZE_512_MIB, SECTOR_SIZE_64_GIB,
     SECTOR_SIZE_8_MIB,
 };
-use storage_proofs::parameter_cache::{
+use storage_proofs_core::parameter_cache::{
     parameter_cache_dir, parameter_cache_dir_name, CacheEntryMetadata, ParameterData, ParameterMap,
     GROTH_PARAMETER_EXT, PARAMETER_METADATA_EXT, VERIFYING_KEY_EXT,
 };
