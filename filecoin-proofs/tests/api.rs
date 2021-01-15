@@ -257,7 +257,7 @@ fn aggregate_proofs<Tree: 'static + MerkleTreeTrait>(
     verify_aggregate_seal_commit_proofs::<Tree>(
         config,
         num_proofs_to_aggregate,
-        &aggregate_proof,
+        aggregate_proof,
         commit_inputs,
     )
 }

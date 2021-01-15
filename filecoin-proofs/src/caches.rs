@@ -8,7 +8,7 @@ use bellperson::groth16;
 use lazy_static::lazy_static;
 use log::info;
 use storage_proofs_core::compound_proof::CompoundProof;
-use storage_proofs_core::parameter_cache::SRS_MAX_PROOFS_TO_AGGREGATE;
+//use storage_proofs_core::parameter_cache::SRS_MAX_PROOFS_TO_AGGREGATE;
 use storage_proofs_porep::stacked::{StackedCompound, StackedDrg};
 use storage_proofs_post::fallback;
 
@@ -282,6 +282,7 @@ pub fn get_stacked_srs_key<Tree: 'static + MerkleTreeTrait>(
     )?)
 }
 
+/*
 pub fn get_post_srs_key<Tree: 'static + MerkleTreeTrait>(
     post_config: &PoStConfig,
     num_proofs_to_aggregate: usize,
@@ -334,3 +335,4 @@ pub fn get_post_srs_key<Tree: 'static + MerkleTreeTrait>(
         }
     }
 }
+*/
