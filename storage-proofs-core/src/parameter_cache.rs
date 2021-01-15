@@ -22,6 +22,7 @@ use super::settings;
 
 /// Bump this when circuits change to invalidate the cache.
 pub const VERSION: usize = 28;
+pub const SRS_MAX_PROOFS_TO_AGGREGATE: usize = 1024; // FIXME: placeholder value
 
 pub const GROTH_PARAMETER_EXT: &str = "params";
 pub const PARAMETER_METADATA_EXT: &str = "meta";
@@ -174,11 +175,14 @@ pub fn parameter_cache_verifying_key_path(parameter_set_identifier: &str) -> Pat
     ))
 }
 
-pub fn parameter_cache_srs_key_path(parameter_set_identifier: &str) -> PathBuf {
+pub fn parameter_cache_srs_key_path(
+    parameter_set_identifier: &str,
+    num_proofs_to_aggregate: usize,
+) -> PathBuf {
     let dir = Path::new(&parameter_cache_dir_name()).to_path_buf();
     dir.join(format!(
-        "v{}-{}.{}",
-        VERSION, parameter_set_identifier, SRS_KEY_EXT
+        "v{}-{}-{}.{}",
+        VERSION, parameter_set_identifier, num_proofs_to_aggregate, SRS_KEY_EXT
     ))
 }
 
@@ -314,15 +318,21 @@ where
         num_proofs_to_aggregate: usize,
     ) -> Result<groth16::SRS<Bls12>> {
         let id = Self::cache_identifier(pub_params);
-        let cache_path = ensure_ancestor_dirs_exist(parameter_cache_srs_key_path(&id))?;
+        let cache_path =
+            ensure_ancestor_dirs_exist(parameter_cache_srs_key_path(&id, num_proofs_to_aggregate))?;
 
         let generate = || -> Result<groth16::SRS<Bls12>> {
             if let Some(rng) = rng {
+                info!(
+                    "setup_inner_product called with {} [max {}] proofs to aggregate",
+                    num_proofs_to_aggregate, SRS_MAX_PROOFS_TO_AGGREGATE
+                );
                 Ok(groth16::setup_inner_product(rng, num_proofs_to_aggregate))
             } else {
-                bail!("No cached srs key found for {} [failure finding {}]",
-                      id,
-                      cache_path.display()
+                bail!(
+                    "No cached srs key found for {} [failure finding {}]",
+                    id,
+                    cache_path.display()
                 );
             }
         };
@@ -457,13 +467,10 @@ fn read_cached_verifying_key(
     })
 }
 
-fn read_cached_srs_key(
-    cache_entry_path: &PathBuf,
-) -> io::Result<groth16::SRS<Bls12>> {
-    info!(
-        "checking cache_path: {:?} for srs",
-        cache_entry_path
-    );
+fn read_cached_srs_key(cache_entry_path: &PathBuf) -> io::Result<groth16::SRS<Bls12>> {
+    info!("checking cache_path: {:?} for srs", cache_entry_path);
+
+    // FIXME: add srs parameters to manifest and verify them if specified
     with_exclusive_read_lock(cache_entry_path, |mut file| {
         let key = groth16::SRS::read(&mut file)?;
         info!("read srs key from cache {:?} ", cache_entry_path);

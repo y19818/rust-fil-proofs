@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 
 use anyhow::{ensure, Context, Result};
+use bellperson::bls::Bls12;
+use bellperson::groth16;
+use bincode::{deserialize, serialize};
 use filecoin_hashers::Hasher;
 use log::info;
 use storage_proofs_core::compound_proof::{self, CompoundProof};
@@ -11,11 +14,11 @@ use storage_proofs_post::fallback;
 
 use crate::api::post_util::{get_partitions_for_window_post, partition_vanilla_proofs};
 use crate::api::util::as_safe_commitment;
-use crate::caches::{get_post_params, get_post_verifying_key};
+use crate::caches::{get_post_params, get_post_srs_key, get_post_verifying_key};
 use crate::parameters::window_post_setup_params;
 use crate::types::{
-    ChallengeSeed, FallbackPoStSectorProof, PoStConfig, PrivateReplicaInfo, ProverId,
-    PublicReplicaInfo, SnarkProof,
+    AggregateSnarkProof, ChallengeSeed, FallbackPoStSectorProof, PoStConfig, PrivateReplicaInfo,
+    ProverId, PublicReplicaInfo, SnarkProof,
 };
 use crate::PoStType;
 
@@ -244,4 +247,35 @@ pub fn verify_window_post<Tree: 'static + MerkleTreeTrait>(
     info!("verify_window_post:finish");
 
     Ok(true)
+}
+
+/// Generates an aggregated Window proof-of-spacetime.
+pub fn generate_aggregated_window_post<Tree: 'static + MerkleTreeTrait>(
+    post_config: &PoStConfig,
+    //_replicas_len: usize, // only needed if we pass in proof bytes (instead of multi proof)
+    proofs: &[MultiProof<'_>],
+    //snark_proofs: &[SnarkProof],
+) -> Result<AggregateSnarkProof> {
+    info!("generate_aggregated_window_post:start");
+    ensure!(
+        post_config.typ == PoStType::Window,
+        "invalid post config type"
+    );
+
+    todo!()
+}
+
+/// Generates an aggregated Window proof-of-spacetime.
+pub fn verify_aggregated_window_post<Tree: 'static + MerkleTreeTrait>(
+    post_config: &PoStConfig,
+    aggregated_proofs_len: usize,
+    aggregate_proof_bytes: AggregateSnarkProof,
+) -> Result<bool> {
+    info!("verify_aggregated_window_post:start");
+    ensure!(
+        post_config.typ == PoStType::Window,
+        "invalid post config type"
+    );
+
+    todo!()
 }

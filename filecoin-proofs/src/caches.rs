@@ -8,6 +8,7 @@ use bellperson::groth16;
 use lazy_static::lazy_static;
 use log::info;
 use storage_proofs_core::compound_proof::CompoundProof;
+use storage_proofs_core::parameter_cache::SRS_MAX_PROOFS_TO_AGGREGATE;
 use storage_proofs_porep::stacked::{StackedCompound, StackedDrg};
 use storage_proofs_post::fallback;
 
@@ -18,7 +19,6 @@ use crate::types::*;
 type Bls12GrothParams = groth16::MappedParameters<Bls12>;
 pub type Bls12PreparedVerifyingKey = groth16::PreparedVerifyingKey<Bls12>;
 type Bls12SRSKey = groth16::SRS<Bls12>;
-type Bls12VerifierSRSKey = groth16::VerifierSRS<Bls12>;
 
 type Cache<G> = HashMap<String, Arc<G>>;
 type GrothMemCache = Cache<Bls12GrothParams>;
@@ -83,10 +83,7 @@ where
 }
 
 #[inline]
-pub fn lookup_srs_key<F>(
-    identifier: String,
-    generator: F,
-) -> Result<Arc<Bls12SRSKey>>
+pub fn lookup_srs_key<F>(identifier: String, generator: F) -> Result<Arc<Bls12SRSKey>>
 where
     F: FnOnce() -> Result<Bls12SRSKey>,
 {
@@ -254,17 +251,32 @@ pub fn get_stacked_srs_key<Tree: 'static + MerkleTreeTrait>(
     )?;
 
     let srs_generator = || {
+        //////////////////////////////////////////////
+        // FIXME: TESTING ONLY -- RNG MUST BE REMOVED
+        use crate::TEST_SEED;
+        use rand::SeedableRng;
+        use rand_xorshift::XorShiftRng;
+        let rng = &mut XorShiftRng::from_seed(TEST_SEED);
         let srs = <StackedCompound<Tree, DefaultPieceHasher> as CompoundProof<
-                StackedDrg<'_, Tree, DefaultPieceHasher>,
+            StackedDrg<'_, Tree, DefaultPieceHasher>,
             _,
-            >>::srs_key::<rand::rngs::OsRng>(None, &public_params, num_proofs_to_aggregate)?;
+        >>::srs_key::<rand_xorshift::XorShiftRng>(
+            Some(rng),
+            &public_params,
+            num_proofs_to_aggregate,
+        )?;
+        // FIXME: END TESTING
+        //////////////////////////////////////////////
+        //>>::srs_key::<rand::rngs::OsRng>(None, &public_params, num_proofs_to_aggregate)?;
+
         Ok(srs)
     };
 
     Ok(lookup_srs_key(
         format!(
-            "STACKED[{}]",
-            usize::from(PaddedBytesAmount::from(porep_config))
+            "STACKED[{}-{}]",
+            usize::from(PaddedBytesAmount::from(porep_config)),
+            num_proofs_to_aggregate,
         ),
         srs_generator,
     )?)
@@ -282,7 +294,9 @@ pub fn get_post_srs_key<Tree: 'static + MerkleTreeTrait>(
                     fallback::FallbackPoSt<'_, Tree>,
                     fallback::FallbackPoStCircuit<Tree>,
                 >>::srs_key::<rand::rngs::OsRng>(
-                    None, &post_public_params, num_proofs_to_aggregate
+                    None,
+                    &post_public_params,
+                    num_proofs_to_aggregate,
                 )?;
                 Ok(srs)
             };
@@ -303,7 +317,9 @@ pub fn get_post_srs_key<Tree: 'static + MerkleTreeTrait>(
                     fallback::FallbackPoSt<'_, Tree>,
                     fallback::FallbackPoStCircuit<Tree>,
                 >>::srs_key::<rand::rngs::OsRng>(
-                    None, &post_public_params, num_proofs_to_aggregate
+                    None,
+                    &post_public_params,
+                    num_proofs_to_aggregate,
                 )?;
                 Ok(srs)
             };

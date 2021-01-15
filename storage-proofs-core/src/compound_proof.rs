@@ -1,6 +1,7 @@
 use anyhow::{ensure, Context};
 use bellperson::bls::{Bls12, Fr};
-use bellperson::{groth16, Circuit};
+use bellperson::groth16::{self, aggregate_proofs, verify_aggregate_proof, PreparedVerifyingKey};
+use bellperson::Circuit;
 use log::info;
 use rand::{rngs::OsRng, RngCore};
 use rayon::prelude::*;
@@ -268,6 +269,27 @@ where
             .collect()
     }
 
+    fn aggregate_proofs(
+        ip_srs: &groth16::SRS<Bls12>,
+        proofs: &[groth16::Proof<Bls12>],
+    ) -> Result<groth16::AggregateProof<Bls12>> {
+        Ok(aggregate_proofs::<Bls12>(ip_srs, proofs)?)
+    }
+
+    fn verify_aggregate_proofs(
+        ip_verifier_srs: &groth16::VerifierSRS<Bls12>,
+        pvk: &PreparedVerifyingKey<Bls12>,
+        public_inputs: &[Vec<Fr>],
+        aggregate_proof: &groth16::AggregateProof<Bls12>,
+    ) -> Result<bool> {
+        Ok(verify_aggregate_proof(
+            ip_verifier_srs,
+            pvk,
+            public_inputs,
+            aggregate_proof,
+        )?)
+    }
+
     /// generate_public_inputs generates public inputs suitable for use as input during verification
     /// of a proof generated from this CompoundProof's bellperson::Circuit (C). These inputs correspond
     /// to those allocated when C is synthesized.
@@ -325,7 +347,12 @@ where
         public_params: &S::PublicParams,
         num_proofs_to_aggregate: usize,
     ) -> Result<groth16::SRS<Bls12>> {
-        Self::get_inner_product(rng, Self::blank_circuit(public_params), public_params, num_proofs_to_aggregate)
+        Self::get_inner_product(
+            rng,
+            Self::blank_circuit(public_params),
+            public_params,
+            num_proofs_to_aggregate,
+        )
     }
 
     fn circuit_for_test(
