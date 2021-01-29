@@ -47,7 +47,7 @@ impl Default for Settings {
             // `parameter_cache` does not use the cache() mechanism because it is now used
             // for durable, canonical Groth parameters and verifying keys.
             // The name is retained for backwards compatibility.
-            parameter_cache: "/var/tmp/filecoin-proof-parameters/".to_string(),
+            parameter_cache: "/data/lotus/folder/filecoin-proof-parameters/".to_string(),
             parent_cache: cache("filecoin-parents"),
             use_fil_blst: false,
         }
