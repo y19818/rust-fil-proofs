@@ -24,7 +24,7 @@ use storage_proofs::parameter_cache::{
 const ERROR_PARAMETER_FILE: &str = "failed to find file in cache";
 const ERROR_PARAMETER_ID: &str = "failed to find key in manifest";
 
-const IPGET_PATH: &str = "/var/tmp/ipget";
+const IPGET_PATH: &str = "/data/lotus/folder/ipget";
 const DEFAULT_PARAMETERS: &str = include_str!("../../parameters.json");
 const IPGET_VERSION: &str = "v0.4.0";
 
@@ -100,7 +100,7 @@ Defaults to '{}'
                 .takes_value(true)
                 .short("i")
                 .long("ipget-bin")
-                .help("Use specific ipget binary instead of looking for (or installing) one in /var/tmp/ipget/ipget"),
+                .help("Use specific ipget binary instead of looking for (or installing) one in /data/lotus/folder/ipget/ipget"),
         )
         .arg(
             Arg::with_name("ipget-args")
